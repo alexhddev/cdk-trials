@@ -1,16 +1,38 @@
 import * as cdk from 'aws-cdk-lib';
+import { CfnOutput, Fn } from 'aws-cdk-lib';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class CdkTrialsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+		super(scope, id, props);
 
-    // The code that defines your stack goes here
+		const suffix = this.initializeSuffix();
+		const bucket = new Bucket(this, 'photos-bucket2', {
+			bucketName: `photos-bucket-${suffix}`
+		})
+		console.log('bucket name: ' + bucket.bucketName)
+		new CfnOutput(this, 'PhotosBucketName', {
+			value: bucket.bucketName
+		});
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdkTrialsQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
-  }
+
+		new CfnOutput(this, 'stackId', {
+			value: this.stackId
+		});
+		new CfnOutput(this, 'StackSuffix', {
+			value: suffix
+		});
+	}
+
+	private initializeSuffix(){
+		const shortStackId = Fn.select(2, Fn.split('/', this.stackId));
+		const suffix = Fn.select(4, Fn.split('-', shortStackId));
+		return suffix;
+	}
+
+
+
+
+
 }
